@@ -1,0 +1,54 @@
+# https://docs.github.com/en/actions/creating-actions/about-custom-actions
+
+name: Pack And Push NuGet Package
+description: Pack a nuget package and push it to the nuget server.
+
+inputs:
+  package:
+    description: nuget package name
+    required: true
+
+  description:
+    description: nuget package description
+    required: true
+
+  version:
+    description: nuget package version
+    required: true
+
+  authors:
+    description: nuget package authors
+    required: false
+    default: 'Albelli'
+
+  paths:
+    description: paths to files to be packaged in the nuget package
+    required: true
+
+  server:
+    description: nuget api url
+    required: true
+
+  username:
+    description: nuget username
+    required: true
+
+  password:
+    description: nuget password
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: pack nuget package and publish it to the nuget server
+      shell: bash
+      run: |
+        PR_BRANCH=${GITHUB_HEAD_REF}
+        PUSH_BRANCH=${GITHUB_REF#refs/heads/}
+        BRANCH="${PR_BRANCH:-${PUSH_BRANCH}}"
+        echo "<?xml version=\"1.0\" encoding=\"utf-8\"?><package xmlns=\"http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd\"><metadata><id>${{ inputs.package }}</id><version>${{ inputs.version }}</version><authors>${{ inputs.authors }}</authors><description>${{ inputs.description }}</description></metadata></package>" > config.nuspec
+        echo "{\"build\":\"${{ inputs.version }}\", \"branch\":\"$BRANCH\"}" > info.json
+        zip -r ${{ inputs.package }}.nupkg config.nuspec info.json ${{ inputs.paths }}
+        dotnet nuget add source ${{ inputs.server }} -n albelli -u ${{ inputs.username }} -p ${{ inputs.password }} --store-password-in-clear-text
+        dotnet nuget push ${{ inputs.package }}.nupkg -s albelli --skip-duplicate --api-key ${{ inputs.username }}:${{ inputs.password }} --timeout 15
+

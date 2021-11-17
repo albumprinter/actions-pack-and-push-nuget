@@ -19,11 +19,17 @@ inputs:
   authors:
     description: nuget package authors
     required: false
-    default: 'Albelli'
+    default: 'Albelli B.V.'
+
+  cwd:
+    description: the directory with artifacts
+    required: false
+    default: .
 
   paths:
     description: paths to files to be packaged in the nuget package
-    required: true
+    required: false
+    default: .
 
   server:
     description: nuget api url
@@ -41,6 +47,7 @@ runs:
   using: composite
   steps:
     - name: pack nuget package and publish it to the nuget server
+      working-directory: ${{ inputs.cwd }}
       shell: bash
       run: |
         PR_BRANCH=${GITHUB_HEAD_REF}

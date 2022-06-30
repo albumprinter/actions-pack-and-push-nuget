@@ -50,5 +50,5 @@ runs:
         echo "{\"build\":\"${{ inputs.version }}\", \"branch\":\"$BRANCH\"}" > info.json
         zip -r ${{ inputs.package }}.nupkg config.nuspec info.json ${{ inputs.paths }}
         dotnet nuget add source ${{ inputs.server }} -n albelli -u ${{ inputs.username }} -p ${{ inputs.password }} --store-password-in-clear-text
-        dotnet nuget push ${{ inputs.package }}.nupkg -s albelli --skip-duplicate --api-key ${{ inputs.username }}:${{ inputs.password }} --timeout 15
+        dotnet nuget push ${{ inputs.package }}.nupkg -s albelli --skip-duplicate --api-key ${{ inputs.username }}:${{ inputs.password }} --timeout 30
 
